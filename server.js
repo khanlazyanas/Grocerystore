@@ -10,6 +10,7 @@ import productroutes from "./routes/productroute.js";
 import cartroutes from "./routes/cartroute.js";
 import orderroutes from "./routes/Orderroute.js";
 import paymentroutes from "./routes/paymentroute.js";
+import feedbackRoutes from "./routes/FeedbackRoutes.js"
 
 // Config
 dotenv.config();
@@ -31,6 +32,7 @@ app.use("/api/products", productroutes);
 app.use("/api/cart", cartroutes);
 app.use("/api/order", orderroutes);
 app.use("/api/payment", paymentroutes);
+app.use("/api/feedback",feedbackRoutes)
 
 // DB Connect
 Connectdb();
