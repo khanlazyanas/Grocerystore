@@ -1,27 +1,23 @@
-import jwt from "jsonwebtoken"
+import jwt from "jsonwebtoken";
 
+export const sendCookie = (user, res, message) => {
+  const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
+    expiresIn: "10d",
+  });
 
-export const Sendcookie =(user,res,message)=>{
+  const isProduction = process.env.NODE_ENV === "production";
 
-    const token = jwt.sign({_id:user._id},process.env.JWT_SECRET,{expiresIn:"10d"});
+  res.cookie("token", token, {
+    httpOnly: true,
+    maxAge: 10 * 24 * 60 * 60 * 1000, // 10 days
+    sameSite: isProduction ? "None" : "Lax",  // Production me None, local me Lax
+    secure: isProduction,                     // Production me true (https), local me false
+  });
 
-    res.cookie("token", token, {
-  httpOnly: true,
-  maxAge: 10 * 24 * 60 * 60 * 1000,
-  sameSite: "None",   // ⛔ Important for cross-origin
-  secure: false       // ⛔ For localhost frontend, secure must be false
-});
-
-
-    res.status(200).json({
-        success:true,
-        message,
-        user,
-        token,
-    })
-}
-
-
-
-
-
+  res.status(200).json({
+    success: true,
+    message,
+    user,
+    token,
+  });
+};

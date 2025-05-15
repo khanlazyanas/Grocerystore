@@ -1,6 +1,6 @@
 import  {User}  from "../models/Usermodel.js";
 import bcrypt from "bcryptjs";
-import { Sendcookie } from "../utils/sendcookie.js";
+import  {sendCookie}  from "../utils/sendcookie.js";
 
 
 export const Register = async(req,res)=>{
@@ -16,7 +16,7 @@ export const Register = async(req,res)=>{
     const hassedpassword = await bcrypt.hash(password,10)
 
     const user = await User.create({name,email,password:hassedpassword})
-    Sendcookie(user,res, `Register successfully`)
+    sendCookie(user,res, `Register successfully`)
    } catch (error) {
     res.status(500).json({message:"Server error"})
    }
@@ -39,7 +39,7 @@ export const Login = async(req,res)=>{
       return res.status(400).json({message: "Invalid Credentials"})
     }
 
-    Sendcookie(user,res, `welcome back ${user.name}`);
+    sendCookie(user,res, `welcome back ${user.name}`);
 
   } catch (error) {
     res.status(500).json({success:false, message:"Login error"})
