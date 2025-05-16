@@ -47,11 +47,14 @@ export const Login = async(req,res)=>{
 }
 
 export const Logout = (req, res) => {
- res.clearCookie("token", {
+res.clearCookie("token", {
   httpOnly: true,
   sameSite: "None",
-  secure: false   // Also false for local testing
+  secure: true,
+  domain: "grocerystore-6wnc.onrender.com",
+  path: "/",
 });
+
 
 
   res.status(200).json({ success: true, message: "Logged out successfully" });
