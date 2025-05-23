@@ -1,36 +1,37 @@
-// Load .env file properly in ESM
 import dotenv from "dotenv";
-import path from "path";
-import { fileURLToPath } from "url";
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-dotenv.config({ path: path.resolve(__dirname, "../.env") });
+dotenv.config();
 
-// Import necessary modules
 import Razorpay from "razorpay";
 import crypto from "crypto";
 import { Order } from "../models/Order.js";
 
-// Initialize Razorpay
+// 🔐 Razorpay init
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
   key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
-// Create Razorpay Order
 export const createPaymentOrder = async (req, res) => {
   try {
     const { amount } = req.body;
 
-    const options = {
+    if (!amount) {
+      return res.status(400).json({ success: false, message: "Amount is required" });
+    }
+
+    const order = await razorpay.orders.create({
       amount: amount * 100,
       currency: "INR",
       receipt: `receipt_${Date.now()}`,
-    };
+    });
 
-    const order = await razorpay.orders.create(options);
-    res.status(200).json({ success: true, order });
+    res.status(200).json({
+      success: true,
+      key: process.env.RAZORPAY_KEY_ID,
+      order,
+    });
   } catch (err) {
+    console.error("Create Razorpay Order Error:", err);
     res.status(500).json({
       success: false,
       message: "Razorpay Order Failed",
@@ -39,7 +40,6 @@ export const createPaymentOrder = async (req, res) => {
   }
 };
 
-// Verify Razorpay Payment (from frontend)
 export const verifyPayment = async (req, res) => {
   try {
     const {
@@ -68,13 +68,13 @@ export const verifyPayment = async (req, res) => {
         status: "Paid",
       });
 
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         message: "Payment Verified & Order Placed",
         order: newOrder,
       });
     } else {
-      res.status(400).json({ success: false, message: "Invalid Signature" });
+      return res.status(400).json({ success: false, message: "Invalid Signature" });
     }
   } catch (err) {
     res.status(500).json({
@@ -85,7 +85,6 @@ export const verifyPayment = async (req, res) => {
   }
 };
 
-// ✅ Webhook Handler from Razorpay
 export const razorpayWebhook = async (req, res) => {
   try {
     const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
@@ -105,18 +104,7 @@ export const razorpayWebhook = async (req, res) => {
 
     if (event === "payment.captured") {
       const payment = body.payload.payment.entity;
-
-      // ✅ TODO: Add your logic here to save the order or mark payment as successful
-      // Example: find related order by order_id or metadata
-      console.log("✅ Payment Captured via Webhook: ", payment.id);
-
-      // Example basic logic (update if you want to save order here):
-      /*
-      await Order.updateOne(
-        { razorpayOrderId: payment.order_id },
-        { status: "Paid" }
-      );
-      */
+      console.log("✅ Payment Captured via Webhook:", payment.id);
     }
 
     res.status(200).json({ success: true, message: "Webhook processed" });
