@@ -13,6 +13,8 @@ const razorpay = new Razorpay({
 
 export const createPaymentOrder = async (req, res) => {
   try {
+    console.log("Razorpay Key ID:", process.env.RAZORPAY_KEY_ID);  // <-- Yahan add kiya
+
     const { amount } = req.body;
 
     if (!amount) {
@@ -116,3 +118,39 @@ export const razorpayWebhook = async (req, res) => {
     });
   }
 };
+
+
+export const codOrder = async (req, res) => {
+  try {
+    const { items, total, phoneNumber, address, name, email } = req.body;
+
+    if (!items || !total || !phoneNumber || !address || !name || !email) {
+      return res.status(400).json({ success: false, message: "Missing fields" });
+    }
+
+    const newOrder = await Order.create({
+      userId: req.userId,
+      items,
+      total,
+      phoneNumber,
+      address,
+      name,
+      email,
+      paymentMethod: "COD",
+      status: "Pending",
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "COD Order Placed Successfully",
+      order: newOrder,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to place COD order",
+      error: error.message,
+    });
+  }
+};
+
