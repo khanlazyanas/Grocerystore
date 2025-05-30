@@ -41,10 +41,10 @@ const CartSchema = new mongoose.Schema({
         required: true,
         min: 1,
       },
+      // image field removed as requested
     },
   ],
-  total:Number
+  total: Number,
 });
 
 export const Cart = mongoose.model("Cart", CartSchema);
-
