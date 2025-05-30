@@ -1,15 +1,15 @@
-import { Cart } from "../models/Cartmodel.js";
+import {Cart} from "../models/Cartmodel.js"
 
-// 🛒 Get Cart
-export const getCart = async (req, res) => {
-  const cart = await Cart.findOne({ userId: req.userId });
-  res.json(cart || { items: [] });
+export const getCart = async(req,res)=>{
+    const cart = await Cart.findOne({userId:req.userId});
+    res.json(cart || {items: [] });
 };
 
-// 🛒 Add to Cart
+
+
 export const addtoCart = async (req, res, next) => {
   try {
-    const { productId, name, price, quantity, image } = req.body;
+    const { productId, name, price, quantity } = req.body;
     let cart = await Cart.findOne({ userId: req.userId });
 
     if (!cart) {
@@ -19,20 +19,16 @@ export const addtoCart = async (req, res, next) => {
     const itemIndex = cart.items.findIndex(item => item.productId === productId);
 
     if (itemIndex > -1) {
-      cart.items[itemIndex].quantity += Number(quantity);
+      cart.items[itemIndex].quantity += quantity;
     } else {
-      cart.items.push({
-        productId,
-        name,
-        price,
-        quantity: Number(quantity),
-        image,
-      });
+      cart.items.push({ productId, name, price, quantity });
     }
 
-    cart.total = cart.items.reduce((sum, item) => {
+    // ✅ Calculate total and assign it to cart.total BEFORE saving
+    const total = cart.items.reduce((sum, item) => {
       return sum + item.price * item.quantity;
     }, 0);
+    cart.total = total;
 
     await cart.save();
 
@@ -46,7 +42,9 @@ export const addtoCart = async (req, res, next) => {
   }
 };
 
-// 🛒 Update Item Quantity
+
+
+
 export const updateCartItemQuantity = async (req, res, next) => {
   try {
     const { productId, quantity } = req.body;
@@ -62,7 +60,7 @@ export const updateCartItemQuantity = async (req, res, next) => {
       return res.status(404).json({ success: false, message: "Product not found in cart" });
     }
 
-    cart.items[itemIndex].quantity = quantity;
+    cart.items[itemIndex].quantity = quantity; 
     await cart.save();
 
     res.status(200).json({
@@ -75,7 +73,8 @@ export const updateCartItemQuantity = async (req, res, next) => {
   }
 };
 
-// 🛒 Remove from Cart
+
+
 export const removeFromCart = async (req, res, next) => {
   try {
     const { productId } = req.body;
@@ -97,3 +96,6 @@ export const removeFromCart = async (req, res, next) => {
     next(error);
   }
 };
+
+
+
