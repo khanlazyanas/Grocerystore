@@ -9,7 +9,7 @@ export const getCart = async (req, res) => {
 // 🛒 Add to Cart
 export const addtoCart = async (req, res, next) => {
   try {
-    const { productId, name, price, quantity, image } = req.body; // ✅ image added
+    const { productId, name, price, quantity, image } = req.body;
     let cart = await Cart.findOne({ userId: req.userId });
 
     if (!cart) {
@@ -19,16 +19,20 @@ export const addtoCart = async (req, res, next) => {
     const itemIndex = cart.items.findIndex(item => item.productId === productId);
 
     if (itemIndex > -1) {
-      cart.items[itemIndex].quantity += quantity;
+      cart.items[itemIndex].quantity += Number(quantity);
     } else {
-      cart.items.push({ productId, name, price, quantity, image }); // ✅ save image
+      cart.items.push({
+        productId,
+        name,
+        price,
+        quantity: Number(quantity),
+        image,
+      });
     }
 
-    // ✅ Update total
-    const total = cart.items.reduce((sum, item) => {
+    cart.total = cart.items.reduce((sum, item) => {
       return sum + item.price * item.quantity;
     }, 0);
-    cart.total = total;
 
     await cart.save();
 
